@@ -1,21 +1,54 @@
 /**
- * Author: chilli
+ * Author: Luis
+ * Date: 2015-03-15
  * License: CC0
- * Description: z[x] computes the length of the longest common prefix of s[i:] and s, except z[0] = 0. (abacaba -> 0010301)
- * Time: O(n)
+ * Source: own work
+ * Description: 
  * Status: stress-tested
  */
-#pragma once
+ 
+const int MAXPATLEN = 30 + 5;
+const int MAXTEXLEN = 100000 + 5;
 
-vi Z(const string& S) {
-	vi z(sz(S));
-	int l = -1, r = -1;
-	rep(i,1,sz(S)) {
-		z[i] = i >= r ? 0 : min(r - i, z[i - l]);
-		while (i + z[i] < sz(S) && S[i + z[i]] == S[z[i]])
-			z[i]++;
-		if (i + z[i] > r)
-			l = i, r = i + z[i];
-	}
-	return z;
+int z[MAXPATLEN + MAXTEXLEN + 5];
+
+void Z(string &s){
+    int n = s.size();
+    int L = 0, R = 0;
+    for(int i = 0; i < n; i++){
+        if(i > R){
+            L = R = i;
+            while(R < n && s[R-L] == s[R]) R++;
+            z[i] = R - L;
+            R--;
+        } else {
+            int k = i - L;
+            if(z[k] < R-i+1) z[i] = z[k];
+            else {
+                L = i;
+                while(R < n && s[R - L] == s[R]) R++;
+                z[i] = R - L;
+                R--;
+            }
+        }
+    }
+}
+
+int main(){
+    string text, pat;
+    cin >> text >> pat;
+    string concat = pat + "$" + text;
+    Z(concat);
+    
+    int cnt = 0;
+    int at = pat.size() + 1;
+    while(at < concat.size()){
+        if(z[at] == pat.size()){
+            cnt++;
+            at += pat.size() - 1;
+        }
+        at++;
+    }
+    cout << cnt << "\n";
+    return 0;
 }

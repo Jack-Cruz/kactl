@@ -1,36 +1,65 @@
 /**
  * Author: chilli, pajenegod
- * Date: 2020-02-20
+ * Date: 2023-09-30
  * License: CC0
  * Source: Folklore
- * Description: Data structure for computing lowest common ancestors in a tree
- * (with 0 as root). C should be an adjacency list of the tree, either directed
- * or undirected.
+ * Description: Estructura de datos que calcula el lowest common ancestor en un arbol (raiz en 0). Usa sparse table.
  * Time: $O(N \log N + Q)$
  * Status: stress-tested
  */
 #pragma once
 
-#include "../data-structures/RMQ.h"
+const int N = 1e4 + 5;
+const int LOG = 14;
+int n, q;
+int a[N];
+int h[N];
+vector<int> G[N];
+int ST[N][LOG];
 
-struct LCA {
-	int T = 0;
-	vi time, path, ret;
-	RMQ<int> rmq;
+void compute(int u, int p){
+    ST[u][0] = p;
+    for(int d = 1; 1 << d <= h[u]; d++){
+        int y = ST[u][d-1];
+        ST[u][d] = ST[y][d-1];
+    }
+}
+void dfs(int u, int p = -1){
+    compute(u, p);
+    for(int v : G[u]){
+        h[v] = h[u] + 1;
+        dfs(v, u);
+    }
+}
+void go_up(int &a, int d){
+    while(d){
+        int k = __builtin_ctz(d);
+        a = ST[a][k];
+        d &= d - 1;
+    }
+}
+int lca(int u, int v){
+    if(h[u] < h[v]) swap(u, v);
+    // h[u] >= h[v]
+    go_up(u, h[u] - h[v]);  // Nos movemos h[u] - h[v] aristas hacia arriba
+    if(u == v) return u;
+    for(int i = 31 - __builtin_clz(h[u]); i >= 0; i--){
+        if((1 << i) > h[u]) continue;
+        if(ST[u][i] != ST[v][i]){
+            u = ST[u][i];
+            v = ST[v][i];
+        }
+    }
+    return ST[u][0];
+}
 
-	LCA(vector<vi>& C) : time(sz(C)), rmq((dfs(C,0,-1), ret)) {}
-	void dfs(vector<vi>& C, int v, int par) {
-		time[v] = T++;
-		for (int y : C[v]) if (y != par) {
-			path.push_back(v), ret.push_back(time[v]);
-			dfs(C, y, v);
-		}
-	}
-
-	int lca(int a, int b) {
-		if (a == b) return a;
-		tie(a, b) = minmax(time[a], time[b]);
-		return path[rmq.query(a, b)];
-	}
-	//dist(a,b){return depth[a] + depth[b] - 2*depth[lca(a,b)];}
-};
+int main(){
+    // input
+    G[u].push_back(v);
+    // preprocess
+    dfs(0);
+    // querys
+    while(q--){
+        lca(u, v);
+    }
+}

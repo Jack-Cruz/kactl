@@ -1,34 +1,30 @@
 /**
- * Author: Lukas Polacek
- * Date: 2009-10-30
+ * Author: Racso Galván
+ * Date: 2023-09-29
  * License: CC0
- * Source: folklore/TopCoder
- * Description: Computes partial sums a[0] + a[1] + ... + a[pos - 1], and updates single elements a[i],
- * taking the difference between the old and new value.
- * Time: Both operations are $O(\log N)$.
- * Status: Stress-tested
+ * Source: folklore
+ * Description: Estructura de prefijo que permite modificaciones y consulta en O(log N).
+ * Time: O(\log N)
+ * Status: stress-tested
  */
 #pragma once
 
-struct FT {
-	vector<ll> s;
-	FT(int n) : s(n) {}
-	void update(int pos, ll dif) { // a[pos] += dif
-		for (; pos < sz(s); pos |= pos + 1) s[pos] += dif;
-	}
-	ll query(int pos) { // sum of values in [0, pos)
-		ll res = 0;
-		for (; pos > 0; pos &= pos - 1) res += s[pos-1];
-		return res;
-	}
-	int lower_bound(ll sum) {// min pos st sum of [0, pos] >= sum
-		// Returns n if no sum is >= sum, or -1 if empty sum is.
-		if (sum <= 0) return -1;
-		int pos = 0;
-		for (int pw = 1 << 25; pw; pw >>= 1) {
-			if (pos + pw <= sz(s) && s[pos + pw-1] < sum)
-				pos += pw, sum -= s[pos-1];
-		}
-		return pos;
-	}
-};
+const int N = 1000000 + 5;
+ll ft[N];
+
+void update(int pos, int val){
+    while(pos <= MAXI){
+        ft[pos] += val;
+        pos += (pos & -pos);
+    }
+}
+
+ll query(int pos){
+    ll res = 0;
+    while(pos > 0){
+        res += ft[pos];
+        pos -= (pos & -pos);
+    }
+    return res;
+}
+

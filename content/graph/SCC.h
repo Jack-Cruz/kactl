@@ -1,41 +1,56 @@
 /**
- * Author: Lukas Polacek
- * Date: 2009-10-28
+ * Author: Racsó Galván
+ * Date: 2023-09-30
  * License: CC0
  * Source: Czech graph algorithms book, by Demel. (Tarjan's algorithm)
- * Description: Finds strongly connected components in a
- * directed graph. If vertices $u, v$ belong to the same component,
- * we can reach $u$ from $v$ and vice versa.
- * Usage: scc(graph, [\&](vi\& v) { ... }) visits all components
- * in reverse topological order. comp[i] holds the component
- * index of a node (a component only has edges to components with
- * lower index). ncomps will contain the number of components.
+ * Description: Encuentra las componentes fuertemente conectadas. Cabe resaltar que el algoritmos encuentra los componentes ordenados topologicamente.
  * Time: O(E + V)
- * Status: Bruteforce-tested for N <= 5
+ * Status: stress test
  */
 #pragma once
 
-vi val, comp, z, cont;
-int Time, ncomps;
-template<class G, class F> int dfs(int j, G& g, F& f) {
-	int low = val[j] = ++Time, x; z.push_back(j);
-	for (auto e : g[j]) if (comp[e] < 0)
-		low = min(low, val[e] ?: dfs(e,g,f));
+vector<int> G[2][N];
+bool vis[N];
+stack<int> S;
+vector<int> comp;
 
-	if (low == val[j]) {
-		do {
-			x = z.back(); z.pop_back();
-			comp[x] = ncomps;
-			cont.push_back(x);
-		} while (x != j);
-		f(cont); cont.clear();
-		ncomps++;
-	}
-	return val[j] = low;
+void dfs(int u, int id){
+    vis[u] = 1;
+    for(int v : G[id][u]){
+        if(vis[v]) continue;
+        dfs(v, id);
+    }
+    if(id == 0) S.push(u);
+    else comp.push_back(u);
 }
-template<class G, class F> void scc(G& g, F f) {
-	int n = sz(g);
-	val.assign(n, 0); comp.assign(n, -1);
-	Time = ncomps = 0;
-	rep(i,0,n) if (comp[i] < 0) dfs(i, g, f);
+
+void get_scc(){
+    for(int i = 0; i < n; i++){
+        if(vis[i]) continue;
+        dfs(i, 0);
+    }
+    for(int i = 0; i < n; i++) vis[i] = 0;
+
+    vector<vector<int>> res;
+    while(!S.empty()){
+        int i = S.top();
+        S.pop();
+        comp.clear();
+        if(vis[i]) continue;
+        dfs(i, 1);
+        res.push_back(comp);        
+    }
+    cout << res.size() << "\n";
+    for(auto grupo : res){
+        cout << grupo.size() << " ";
+        for(int x : grupo) {
+            cout << x << " ";
+        }
+        cout << "\n";
+    }
+}
+
+int main(){
+    G[0][u].push_back(v);
+    G[1][v].push_back(u);
 }

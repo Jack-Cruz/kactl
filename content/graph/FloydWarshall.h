@@ -1,25 +1,49 @@
 /**
- * Author: Simon Lindholm
- * Date: 2016-12-15
+ * Author: Racsó Galván
+ * Date: 2023-06-30
  * License: CC0
- * Source: http://en.wikipedia.org/wiki/Floyd–Warshall_algorithm
- * Description: Calculates all-pairs shortest path in a directed graph that might have negative edge weights.
- * Input is an distance matrix $m$, where $m[i][j] = \texttt{inf}$ if $i$ and $j$ are not adjacent.
- * As output, $m[i][j]$ is set to the shortest distance between $i$ and $j$, \texttt{inf} if no path, or \texttt{-inf} if the path goes through a negative-weight cycle.
+ * Source: 
+ * Description: Calcula todos los caminos más cortos en un grafo dirigido que puede tener aristas de peso negativo.
+    La entrada es una matriz $n*n$ donde indica los pesos de las aristas, por otro lado, sino existe tiene valor inf.
  * Time: O(N^3)
  * Status: slightly tested
  */
 #pragma once
 
-const ll inf = 1LL << 62;
-void floydWarshall(vector<vector<ll>>& m) {
-	int n = sz(m);
-	rep(i,0,n) m[i][i] = min(m[i][i], 0LL);
-	rep(k,0,n) rep(i,0,n) rep(j,0,n)
-		if (m[i][k] != inf && m[k][j] != inf) {
-			auto newDist = max(m[i][k] + m[k][j], -inf);
-			m[i][j] = min(m[i][j], newDist);
-		}
-	rep(k,0,n) if (m[k][k] < 0) rep(i,0,n) rep(j,0,n)
-		if (m[i][k] != inf && m[k][j] != inf) m[i][j] = -inf;
+const int N = 1e2 + 5;
+const int inf = 2e9 + 10;
+int n, m;
+int d[N][N];
+
+int main(){
+    cin >> n >> m;
+    // preprocess
+    for(int i = 0; i < n; i++){
+        for(int j = 0; j < n; j++){
+            d[i][j] = i == j ? 0 : inf;
+        }
+    }
+    // input
+    for(int i = 0; i < m; i++){
+        int u, v, w;
+        cin >> u >> v >> w;
+        d[u][v] = min(d[u][v], w);
+    }
+    // Floyd warshall
+    for(int k = 0; k < n; k++){
+        for(int i = 0; i < n; i++){
+            for(int j = 0; j < n; j++){
+                if(d[i][k] == inf or d[k][j] == inf) continue;
+                if(d[i][j] > d[i][k] + d[k][j]) d[i][j] = d[i][k] + d[k][j];
+            }
+        }
+    }
+    // Find negative cycle
+    for(int i = 0; i < n; i++){
+        if(d[i][i] < 0){
+            cout << "NEGATIVE CYCLE";
+            return 0;
+        }
+    }
+    return 0;
 }
